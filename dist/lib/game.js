@@ -2,111 +2,77 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-
+exports.createGame = createGame;
+exports.isOver = isOver;
+exports.pass = pass;
+exports.play = play;
+exports.areaScore = areaScore;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
 var Immutable = _interopRequire(require("immutable"));
 
-var createBoard = require("./board").createBoard;
+var _records = require("./records");
+
+var Position = _records.Position;
+var Move = _records.Move;
+
+var _board = require("./board");
+
+var createBoard = _board.createBoard;
+var placeStone = _board.placeStone;
+var boardAreaScore = _board.areaScore;
 
 var opponentColor = require("./util").opponentColor;
 
-var Constants = _interopRequire(require("./constants"));
+function createGame(boardSize) {
+  var board = createBoard(boardSize);
+  return new Immutable.Map({
+    board: board,
+    currentColor: "black",
+    consectutivePasses: 0,
+    history: new Immutable.Set(board.get("stones")) });
+}
 
-var Game = (function () {
-  function Game(boardSize, values) {
-    _classCallCheck(this, Game);
+function isOver(game) {
+  return game.get("consectutivePasses") >= 2;
+}
 
-    if (typeof values !== "undefined") {
-      this.currentColor = values.currentColor;
-      this.consectutivePasses = values.consectutivePasses;
-      this.history = values.history;
-      this.board = values.board;
-    } else {
-      this.currentColor = Constants.BLACK;
-      this.consectutivePasses = 0;
-      this.board = createBoard(boardSize);
-      this.history = Immutable.Set([this.board.stones]);
-    }
+function pass(game, player) {
+  var move = new Move({ stoneColor: player, position: null });
+  return play(game, move);
+}
+
+function play(game, move) {
+  var player = move.get("stoneColor");
+
+  var inHistory = function (otherBoard) {
+    return game.get("history").has(otherBoard.get("stones"));
+  };
+
+  if (isOver(game)) throw new Error("Game is already over");
+
+  if (player != game.get("currentColor")) throw new Error("Not player's turn");
+
+  if (move.get("position") === null) {
+    return game.update("currentColor", opponentColor).update("consectutivePasses", function (p) {
+      return p + 1;
+    });
   }
 
-  _createClass(Game, {
-    isOver: {
-      value: function isOver() {
-        return this.consectutivePasses >= 2;
-      }
-    },
-    getCurrentPlayer: {
-      value: function getCurrentPlayer() {
-        return this.currentColor;
-      }
-    },
-    getBoard: {
-      value: function getBoard() {
-        return this.board;
-      }
-    },
-    play: {
-      value: function play(player, coords) {
-        var _this = this;
+  var newBoard = placeStone(game.get("board"), move);
 
-        var inHistory = function (otherBoard) {
-          return _this.history.has(otherBoard.stones);
-        };
+  if (inHistory(newBoard)) throw new Error("Violation of Ko");
 
-        if (this.isOver()) throw "Game is already over";
-
-        if (player != this.currentColor) throw "Not player's turn";
-
-        var newBoard = this.board.play(this.currentColor, coords);
-        if (inHistory(newBoard)) throw "Violation of Ko";
-
-        return createGame(this.boardSize, {
-          currentColor: opponentColor(this.currentColor),
-          consectutivePasses: 0,
-          board: newBoard,
-          history: this.history.add(newBoard.stones)
-        });
-      }
-    },
-    pass: {
-      value: function pass(player) {
-        if (this.isOver()) throw "Game is already over";
-
-        if (player != this.currentColor) throw "Not player's turn";
-
-        return createGame(this.boardSize, {
-          currentColor: opponentColor(this.currentColor),
-          consectutivePasses: this.consectutivePasses + 1,
-          board: this.board,
-          history: this.history
-        });
-      }
-    },
-    areaScore: {
-
-      /*
-       * Returns Black - White
-       */
-
-      value: function areaScore(komi) {
-        if (typeof komi === "undefined") komi = 0;
-
-        var boardScore = this.board.areaScore();
-        return boardScore[Constants.BLACK] - (boardScore[Constants.WHITE] + komi);
-      }
-    }
+  return game.update("currentColor", opponentColor).set("consectutivePasses", 0).set("board", newBoard).update("history", function (h) {
+    return h.add(newBoard.get("stones"));
   });
+}
 
-  return Game;
-})();
+function areaScore(game) {
+  var komi = arguments[1] === undefined ? 0 : arguments[1];
 
-var createGame = function (boardSize, values) {
-  return new Game(boardSize, values);
-};
-exports.createGame = createGame;
+  var boardScore = boardAreaScore(game.get("board"));
+  return boardScore.black - (boardScore.white + komi);
+}
