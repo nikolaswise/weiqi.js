@@ -1,6 +1,5 @@
 import Immutable from 'immutable';
-import { Position, Move, Group } from './records';
-import { opponentColor } from './util';
+import { Position, Group } from './records';
 
 function positionInBounds(size, position) {
   const i = position.get('i');
@@ -56,12 +55,13 @@ function groupAtPosition(size, board, position) {
 
 
 export function createBoard(size) {
-  if (typeof size === "undefined" || size < 0)
+  if (typeof size === 'undefined' || size < 0) {
     throw new Error('Size must be an integer greater than zero');
+  }
 
   return new Immutable.Map({
-    size: size,
-    stones: new Immutable.Map()
+    size,
+    stones: new Immutable.Map(),
   });
 }
 
@@ -100,7 +100,7 @@ export function placeStone(board, move, allowSuicide = false) {
 }
 
 function allPositions(size) {
-  const range = Immutable.Range(0, size);
+  const range = new Immutable.Range(0, size);
   return range.flatMap(i => range.map(j => new Position({ i, j })));
 }
 
