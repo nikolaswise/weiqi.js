@@ -4,8 +4,8 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["defau
 
 exports.createGame = createGame;
 exports.isOver = isOver;
-exports.pass = pass;
 exports.play = play;
+exports.pass = pass;
 exports.areaScore = areaScore;
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -13,10 +13,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var Immutable = _interopRequire(require("immutable"));
 
-var _records = require("./records");
-
-var Position = _records.Position;
-var Move = _records.Move;
+var Move = require("./records").Move;
 
 var _board = require("./board");
 
@@ -39,11 +36,6 @@ function isOver(game) {
   return game.get("consectutivePasses") >= 2;
 }
 
-function pass(game, player) {
-  var move = new Move({ stoneColor: player, position: null });
-  return play(game, move);
-}
-
 function play(game, move) {
   var player = move.get("stoneColor");
 
@@ -51,9 +43,13 @@ function play(game, move) {
     return game.get("history").has(otherBoard.get("stones"));
   };
 
-  if (isOver(game)) throw new Error("Game is already over");
+  if (isOver(game)) {
+    throw new Error("Game is already over");
+  }
 
-  if (player != game.get("currentColor")) throw new Error("Not player's turn");
+  if (player !== game.get("currentColor")) {
+    throw new Error("Not player's turn");
+  }
 
   if (move.get("position") === null) {
     return game.update("currentColor", opponentColor).update("consectutivePasses", function (p) {
@@ -63,11 +59,18 @@ function play(game, move) {
 
   var newBoard = placeStone(game.get("board"), move);
 
-  if (inHistory(newBoard)) throw new Error("Violation of Ko");
+  if (inHistory(newBoard)) {
+    throw new Error("Violation of Ko");
+  }
 
   return game.update("currentColor", opponentColor).set("consectutivePasses", 0).set("board", newBoard).update("history", function (h) {
     return h.add(newBoard.get("stones"));
   });
+}
+
+function pass(game, player) {
+  var move = new Move({ stoneColor: player, position: null });
+  return play(game, move);
 }
 
 function areaScore(game) {

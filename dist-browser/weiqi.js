@@ -4979,15 +4979,17 @@
 
 }));
 },{}],2:[function(require,module,exports){
-"use strict";
+'use strict';
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _index = require('./index');
 
 var _index2 = _interopRequireDefault(_index);
 
-if (typeof window !== "undefined") window.Weiqi = _index2["default"];
+if (typeof window !== 'undefined') {
+  window.Weiqi = _index2['default'];
+}
 
 },{"./index":3}],3:[function(require,module,exports){
 'use strict';
@@ -4998,19 +5000,20 @@ Object.defineProperty(exports, '__esModule', {
 
 var _libGame = require('./lib/game');
 
-var _libBoard = require('./lib/board');
-
 var _libRecords = require('./lib/records');
 
 exports['default'] = {
   createGame: _libGame.createGame,
-  createBoard: _libBoard.createBoard,
+  isOver: _libGame.isOver,
+  play: _libGame.play,
+  pass: _libGame.pass,
+  areaScore: _libGame.areaScore,
   Position: _libRecords.Position,
   Move: _libRecords.Move
 };
 module.exports = exports['default'];
 
-},{"./lib/board":4,"./lib/game":5,"./lib/records":6}],4:[function(require,module,exports){
+},{"./lib/game":5,"./lib/records":6}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -5028,8 +5031,6 @@ var _immutable = require('immutable');
 var _immutable2 = _interopRequireDefault(_immutable);
 
 var _records = require('./records');
-
-var _util = require('./util');
 
 function positionInBounds(size, position) {
   var i = position.get('i');
@@ -5120,7 +5121,9 @@ function groupAtPosition(size, board, position) {
 }
 
 function createBoard(size) {
-  if (typeof size === "undefined" || size < 0) throw new Error('Size must be an integer greater than zero');
+  if (typeof size === 'undefined' || size < 0) {
+    throw new Error('Size must be an integer greater than zero');
+  }
 
   return new _immutable2['default'].Map({
     size: size,
@@ -5169,7 +5172,7 @@ function placeStone(board, move) {
 }
 
 function allPositions(size) {
-  var range = _immutable2['default'].Range(0, size);
+  var range = new _immutable2['default'].Range(0, size);
   return range.flatMap(function (i) {
     return range.map(function (j) {
       return new _records.Position({ i: i, j: j });
@@ -5237,47 +5240,42 @@ function toArray(board) {
   return boardArray;
 }
 
-},{"./records":6,"./util":7,"immutable":1}],5:[function(require,module,exports){
-"use strict";
+},{"./records":6,"immutable":1}],5:[function(require,module,exports){
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 exports.createGame = createGame;
 exports.isOver = isOver;
-exports.pass = pass;
 exports.play = play;
+exports.pass = pass;
 exports.areaScore = areaScore;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _immutable = require("immutable");
+var _immutable = require('immutable');
 
 var _immutable2 = _interopRequireDefault(_immutable);
 
 var _records = require('./records');
 
-var _board = require("./board");
+var _board = require('./board');
 
-var _util = require("./util");
+var _util = require('./util');
 
 function createGame(boardSize) {
   var board = (0, _board.createBoard)(boardSize);
-  return new _immutable2["default"].Map({
+  return new _immutable2['default'].Map({
     board: board,
     currentColor: 'black',
     consectutivePasses: 0,
-    history: new _immutable2["default"].Set(board.get('stones'))
+    history: new _immutable2['default'].Set(board.get('stones'))
   });
 }
 
 function isOver(game) {
   return game.get('consectutivePasses') >= 2;
-}
-
-function pass(game, player) {
-  var move = new _records.Move({ stoneColor: player, position: null });
-  return play(game, move);
 }
 
 function play(game, move) {
@@ -5287,9 +5285,13 @@ function play(game, move) {
     return game.get('history').has(otherBoard.get('stones'));
   };
 
-  if (isOver(game)) throw new Error('Game is already over');
+  if (isOver(game)) {
+    throw new Error('Game is already over');
+  }
 
-  if (player != game.get('currentColor')) throw new Error("Not player's turn");
+  if (player !== game.get('currentColor')) {
+    throw new Error("Not player's turn");
+  }
 
   if (move.get('position') === null) {
     return game.update('currentColor', _util.opponentColor).update('consectutivePasses', function (p) {
@@ -5299,11 +5301,18 @@ function play(game, move) {
 
   var newBoard = (0, _board.placeStone)(game.get('board'), move);
 
-  if (inHistory(newBoard)) throw new Error('Violation of Ko');
+  if (inHistory(newBoard)) {
+    throw new Error('Violation of Ko');
+  }
 
   return game.update('currentColor', _util.opponentColor).set('consectutivePasses', 0).set('board', newBoard).update('history', function (h) {
     return h.add(newBoard.get('stones'));
   });
+}
+
+function pass(game, player) {
+  var move = new _records.Move({ stoneColor: player, position: null });
+  return play(game, move);
 }
 
 function areaScore(game) {
@@ -5330,7 +5339,10 @@ var Position = new _immutable2['default'].Record({ i: 0, j: 0 });
 exports.Position = Position;
 var Move = new _immutable2['default'].Record({ position: new Position(), stoneColor: 'black' });
 exports.Move = Move;
-var Group = new _immutable2['default'].Record({ stones: new _immutable2['default'].Set(), liberties: new _immutable2['default'].Set() });
+var Group = new _immutable2['default'].Record({
+  stones: new _immutable2['default'].Set(),
+  liberties: new _immutable2['default'].Set()
+});
 exports.Group = Group;
 
 },{"immutable":1}],7:[function(require,module,exports){

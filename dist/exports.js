@@ -4,4 +4,6 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["defau
 
 var Weiqi = _interopRequire(require("./index"));
 
-if (typeof window !== "undefined") window.Weiqi = Weiqi;
+if (typeof window !== "undefined") {
+  window.Weiqi = Weiqi;
+}

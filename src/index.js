@@ -1,10 +1,12 @@
-import { createGame } from './lib/game';
-import { createBoard } from './lib/board';
+import { createGame, isOver, play, pass, areaScore } from './lib/game';
 import { Position, Move } from './lib/records';
 
 export default {
   createGame,
-  createBoard,
+  isOver,
+  play,
+  pass,
+  areaScore,
   Position,
   Move,
 };

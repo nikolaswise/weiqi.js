@@ -15,10 +15,7 @@ var Immutable = _interopRequire(require("immutable"));
 var _records = require("./records");
 
 var Position = _records.Position;
-var Move = _records.Move;
 var Group = _records.Group;
-
-var opponentColor = require("./util").opponentColor;
 
 function positionInBounds(size, position) {
   var i = position.get("i");
@@ -80,12 +77,13 @@ function groupAtPosition(size, board, position) {
 }
 
 function createBoard(size) {
-  if (typeof size === "undefined" || size < 0) throw new Error("Size must be an integer greater than zero");
+  if (typeof size === "undefined" || size < 0) {
+    throw new Error("Size must be an integer greater than zero");
+  }
 
   return new Immutable.Map({
     size: size,
-    stones: new Immutable.Map()
-  });
+    stones: new Immutable.Map() });
 }
 
 function placeStone(board, move) {
@@ -129,7 +127,7 @@ function placeStone(board, move) {
 }
 
 function allPositions(size) {
-  var range = Immutable.Range(0, size);
+  var range = new Immutable.Range(0, size);
   return range.flatMap(function (i) {
     return range.map(function (j) {
       return new Position({ i: i, j: j });

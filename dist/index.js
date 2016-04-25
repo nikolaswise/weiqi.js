@@ -1,8 +1,12 @@
 "use strict";
 
-var createGame = require("./lib/game").createGame;
+var _libGame = require("./lib/game");
 
-var createBoard = require("./lib/board").createBoard;
+var createGame = _libGame.createGame;
+var isOver = _libGame.isOver;
+var play = _libGame.play;
+var pass = _libGame.pass;
+var areaScore = _libGame.areaScore;
 
 var _libRecords = require("./lib/records");
 
@@ -10,6 +14,9 @@ var Position = _libRecords.Position;
 var Move = _libRecords.Move;
 module.exports = {
   createGame: createGame,
-  createBoard: createBoard,
+  isOver: isOver,
+  play: play,
+  pass: pass,
+  areaScore: areaScore,
   Position: Position,
   Move: Move };
