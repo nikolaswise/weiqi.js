@@ -175,6 +175,21 @@ var Board = (function () {
         return getStone(this.stones, new Point(coords[0], coords[1]));
       })
     },
+    removeStone: {
+      value: (function (_removeStone) {
+        var _removeStoneWrapper = function removeStone(_x2) {
+          return _removeStone.apply(this, arguments);
+        };
+
+        _removeStoneWrapper.toString = function () {
+          return _removeStone.toString();
+        };
+
+        return _removeStoneWrapper;
+      })(function (coords) {
+        return removeStone(this.stones, new Point(coords[0], coords[1]));
+      })
+    },
     getSize: {
       value: function getSize() {
         return this.size;

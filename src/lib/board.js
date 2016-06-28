@@ -120,6 +120,10 @@ class Board {
     return getStone(this.stones, new Point(coords[0], coords[1]));
   }
 
+  removeStone(coords) {
+    return removeStone(this.stones, new Point(coords[0], coords[1]));
+  }
+
   getSize() {
     return this.size;
   }
