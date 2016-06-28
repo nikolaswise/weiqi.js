@@ -25,10 +25,7 @@ const getStone = (stones, coords) =>
   stones.get(coords, Constants.EMPTY);
 
 const replaceStone = (stones, coords, value) => {
-  if (value === Constants.EMPTY)
-    return removeStone(coords);
-  else
-    return stones.set(coords, value);
+  return stones.set(coords, value);
 };
 
 const removeStone = (stones, coords) =>
@@ -106,6 +103,7 @@ const createEmptyGrid = (() => {
 
 class Board {
   constructor(size, stones) {
+    // console.log(size, stones)
     if (typeof size === "undefined" || size < 0)
       throw "Size must be an integer greater than zero";
 
@@ -118,10 +116,6 @@ class Board {
 
   getStone(coords) {
     return getStone(this.stones, new Point(coords[0], coords[1]));
-  }
-
-  removeStone(coords) {
-    return removeStone(this.stones, new Point(coords[0], coords[1]));
   }
 
   getSize() {
@@ -141,6 +135,20 @@ class Board {
     return createEmptyGrid(this.size).withMutations(mergeStones);
   }
 
+  removeStone(coords) {
+    coords = new Point(coords[0], coords[1]);
+
+    if (!inBounds(this.size, coords))
+      throw "Intersection out of bounds";
+
+    if (getStone(this.stones, coords) == Constants.EMPTY)
+      throw "Intersection already empty";
+
+    let newBoard = replaceStone(this.stones, coords, Constants.EMPTY);
+    return createBoard(this.size, newBoard);
+
+  }
+
   play(color, coords) {
     coords = new Point(coords[0], coords[1]);
 
@@ -152,26 +160,26 @@ class Board {
 
     let newBoard = replaceStone(this.stones, coords, color);
     const neighbors = getAdjacentIntersections(this.size, coords);
+
     const neighborColors = Immutable.Map(
       neighbors.zipWith(n => [n, getStone(newBoard, n)])
     );
+
     const isOpponentColor = (stoneColor, _) =>
       stoneColor === opponentColor(color);
+
     let captured = neighborColors.
                      filter(isOpponentColor).
                      map((val, coord) => getGroup(newBoard, this.size, coord)).
                      valueSeq().
                      filter(g => g.isDead());
-
     // detect suicide
     const newGroup = getGroup(newBoard, this.size, coords);
     if (captured.isEmpty() && newGroup.isDead())
       captured = Immutable.List([newGroup]);
-
     newBoard = captured.
                  flatMap(g => g.get("stones")).
                  reduce((acc, stone) => removeStone(acc, stone), newBoard);
-
     return createBoard(this.size, newBoard);
   }
 
@@ -198,7 +206,7 @@ class Board {
 
       visited = visited.union(groupStones);
     });
-
+    // console.log('score ', score)
     return score;
   }
 

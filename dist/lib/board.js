@@ -70,7 +70,7 @@ var getStone = function (stones, coords) {
 };
 
 var replaceStone = function (stones, coords, value) {
-  if (value === Constants.EMPTY) return removeStone(coords);else return stones.set(coords, value);
+  return stones.set(coords, value);
 };
 
 var removeStone = function (stones, coords) {
@@ -151,6 +151,7 @@ var Board = (function () {
   function Board(size, stones) {
     _classCallCheck(this, Board);
 
+    // console.log(size, stones)
     if (typeof size === "undefined" || size < 0) throw "Size must be an integer greater than zero";
 
     if (typeof stones === "undefined") stones = Immutable.Map();
@@ -175,21 +176,6 @@ var Board = (function () {
         return getStone(this.stones, new Point(coords[0], coords[1]));
       })
     },
-    removeStone: {
-      value: (function (_removeStone) {
-        var _removeStoneWrapper = function removeStone(_x2) {
-          return _removeStone.apply(this, arguments);
-        };
-
-        _removeStoneWrapper.toString = function () {
-          return _removeStone.toString();
-        };
-
-        return _removeStoneWrapper;
-      })(function (coords) {
-        return removeStone(this.stones, new Point(coords[0], coords[1]));
-      })
-    },
     getSize: {
       value: function getSize() {
         return this.size;
@@ -212,6 +198,18 @@ var Board = (function () {
         return createEmptyGrid(this.size).withMutations(mergeStones);
       }
     },
+    removeStone: {
+      value: function removeStone(coords) {
+        coords = new Point(coords[0], coords[1]);
+
+        if (!inBounds(this.size, coords)) throw "Intersection out of bounds";
+
+        if (getStone(this.stones, coords) == Constants.EMPTY) throw "Intersection already empty";
+
+        var newBoard = replaceStone(this.stones, coords, Constants.EMPTY);
+        return createBoard(this.size, newBoard);
+      }
+    },
     play: {
       value: function play(color, coords) {
         var _this = this;
@@ -224,28 +222,28 @@ var Board = (function () {
 
         var newBoard = replaceStone(this.stones, coords, color);
         var neighbors = getAdjacentIntersections(this.size, coords);
+
         var neighborColors = Immutable.Map(neighbors.zipWith(function (n) {
           return [n, getStone(newBoard, n)];
         }));
+
         var isOpponentColor = function (stoneColor, _) {
           return stoneColor === opponentColor(color);
         };
+
         var captured = neighborColors.filter(isOpponentColor).map(function (val, coord) {
           return getGroup(newBoard, _this.size, coord);
         }).valueSeq().filter(function (g) {
           return g.isDead();
         });
-
         // detect suicide
         var newGroup = getGroup(newBoard, this.size, coords);
         if (captured.isEmpty() && newGroup.isDead()) captured = Immutable.List([newGroup]);
-
         newBoard = captured.flatMap(function (g) {
           return g.get("stones");
         }).reduce(function (acc, stone) {
           return removeStone(acc, stone);
         }, newBoard);
-
         return createBoard(this.size, newBoard);
       }
     },
@@ -271,7 +269,7 @@ var Board = (function () {
 
           visited = visited.union(groupStones);
         });
-
+        // console.log('score ', score)
         return score;
       }
     }

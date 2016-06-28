@@ -90,13 +90,14 @@ var Game = (function () {
     },
     removeStone: {
       value: function removeStone(coords) {
-        console.log("please remove the stone at", coords);
-        console.log(this.board.stones);
+        console.log(this.board);
+        var newBoard = this.board.removeStone(coords);
+        console.log(newBoard);
 
         return createGame(this.boardSize, {
           currentColor: this.currentColor,
           consectutivePasses: 2,
-          board: this.board.stones.remove(coords),
+          board: newBoard,
           history: this.history.add(newBoard.stones)
         });
       }
