@@ -69,11 +69,11 @@ class Game {
   removeStone(coords) {
     console.log('please remove the stone at', coords)
     console.log(this.board.stones)
-    const newBoard = this.board.stones.remove(coords);
+
     return createGame(this.boardSize, {
       currentColor: this.currentColor,
       consectutivePasses: 2,
-      board: newBoard,
+      board: this.board.stones.remove(coords),
       history: this.history.add(newBoard.stones)
     });
   }
