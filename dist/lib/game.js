@@ -88,6 +88,13 @@ var Game = (function () {
         });
       }
     },
+    removeStone: {
+      value: function removeStone(coords) {
+        console.log("please remove the stone at", coords);
+        console.log(this.board.stones);
+        this.board.stones.remove(coords);
+      }
+    },
     areaScore: {
 
       /*
