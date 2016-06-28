@@ -66,6 +66,12 @@ class Game {
     });
   }
 
+  removeStone(coords) {
+    console.log('please remove the stone at', coords)
+    console.log(this.board.stones)
+    this.board.stones.remove(coords);
+  }
+
   /*
    * Returns Black - White
    */
