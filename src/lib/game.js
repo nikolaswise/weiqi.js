@@ -67,9 +67,10 @@ class Game {
   }
 
   removeStone(coords) {
-    console.log(this.board)
+    if (!this.isOver())
+      throw "Game is not over";
+
     const newBoard = this.board.removeStone(coords);
-    console.log(newBoard)
 
     return createGame(this.boardSize, {
       currentColor: this.currentColor,
