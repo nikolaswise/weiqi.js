@@ -90,9 +90,9 @@ var Game = (function () {
     },
     removeStone: {
       value: function removeStone(coords) {
-        console.log(this.board);
+        if (!this.isOver()) throw "Game is not over";
+
         var newBoard = this.board.removeStone(coords);
-        console.log(newBoard);
 
         return createGame(this.boardSize, {
           currentColor: this.currentColor,
